@@ -1,0 +1,9 @@
+main: me.amitay.Parkour.Parkour
+name: ParkourLevels
+version: 1.0.0
+
+commands:
+  party:
+    description: party.
+  parkour:
+    description: parkour.
