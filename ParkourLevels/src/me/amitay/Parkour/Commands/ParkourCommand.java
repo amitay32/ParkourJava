@@ -14,9 +14,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-
-import javax.rmi.CORBA.Util;
 import java.util.ArrayList;
 
 public class ParkourCommand implements CommandExecutor, Listener {
@@ -41,9 +38,8 @@ public class ParkourCommand implements CommandExecutor, Listener {
                 if (args[0].equalsIgnoreCase("checkpoint")) {
                     Party party = pl.partyManager.getPlayerParty(p);
                     if (pl.parkourManager.isInParkour(p)){
-                        if (party.getCurrentCheckpoint() != -1){
-                            p.teleport((Location) pl.getConfig().getList("Parkour.Levels." + party.getCurrentPlayedMode() +
-                                    "." +party.getCurrentPlayedLevel() + ".CheckPoints").get(party.getCurrentCheckpoint()));
+                        if (party.getCurrentCheckpoint() != null){
+                            p.teleport(party.getCurrentCheckpoint());
                             p.sendMessage(Utils.getFormattedText("&eSuccessfully teleported to last checkpoint"));
                             return true;
                         } else {
@@ -318,7 +314,7 @@ public class ParkourCommand implements CommandExecutor, Listener {
             return;
         }
         if (party.getLeaderTeamLevel() >= lvl && party.getMemberTeamLevel() >= lvl) {
-            ParkourStage parkourStage = new ParkourStage(lvl, "Teams", pl);
+            ParkourStage parkourStage = pl.parkourManager.getParkourStage(lvl, "Teams");
             party.setCurrentPlayedLevel(lvl);
             party.setCurrentPlayedMode("Teams");
             pl.parkourManager.startParkourLevel(p, parkourStage);
@@ -345,7 +341,7 @@ public class ParkourCommand implements CommandExecutor, Listener {
             return;
         }
         if (party.getLeaderSoloLevel() >= lvl) {
-            ParkourStage parkourStage = new ParkourStage(lvl, "Solo", pl);
+            ParkourStage parkourStage = pl.parkourManager.getParkourStage(lvl, "Solo");
             party.setCurrentPlayedLevel(lvl);
             party.setCurrentPlayedMode("Solo");
             pl.parkourManager.startParkourLevel(p, parkourStage);

@@ -1,12 +1,16 @@
 package me.amitay.Parkour.Listeners;
 
 import me.amitay.Parkour.Parkour;
+import me.amitay.Parkour.Utils.ParkourPackage.CheckPoint;
 import me.amitay.Parkour.Utils.ParkourPackage.ParkourStage;
 import me.amitay.Parkour.Utils.Utils;
 import me.amitay.Parkour.Utils.party.Party;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,68 +33,30 @@ public class PlayerInteractListener implements Listener {
             if (party == null) {
                 return;
             }
-            if (e.getAction().equals(Action.PHYSICAL)) {
-                if (e.getClickedBlock().getType().equals(Material.IRON_PLATE)) {
-                    ParkourStage parkourStage = new ParkourStage(party.getCurrentPlayedLevel(), party.getCurrentPlayedMode(), pl);
-                    int checkpoint = -1;
-                    for (int i = 0; i <= pl.getConfig().getList("Parkour.Levels." + party.getCurrentPlayedMode() + "." + party.getCurrentPlayedLevel() + ".CheckPoints").size() - 1; i++) {
-                        Location loc = (Location) pl.getConfig().getList("Parkour.Levels." + party.getCurrentPlayedMode() + "." + party.getCurrentPlayedLevel() + ".CheckPoints").get(i);
-                        if (e.getClickedBlock().getLocation().getBlockZ() == loc.getBlockZ() && e.getClickedBlock().getLocation().getBlockX() == loc.getBlockX() && e.getClickedBlock().getLocation().getBlockY() == loc.getBlockY()) {
-                            checkpoint++;
-                            break;
-                        }
-                        checkpoint++;
+            Block block = p.getLocation().subtract(0, 1, 0).getBlock();
+            if (block != null && e.getAction().equals(Action.PHYSICAL)) {
+                World world = p.getLocation().getWorld();
+                ParkourStage parkourStage = pl.parkourManager.getParkourStage(party.getCurrentPlayedLevel(), party.getCurrentPlayedMode());
+                CheckPoint checkPoint = parkourStage.getCheckPoint(world);
+                if (block.getType().equals(Material.IRON_PLATE)) {
+                    if (party.getCurrentCheckpoint() == null) {
+                        party.setCheckPoint(1, checkPoint.getLocationByStage(1), block);
+                        return;
                     }
-                    Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(pl, new Runnable() {
-                        @Override
-                        public void run() {
-                            if (shouldSay == false)
-                                shouldSay = true;
+                    //In case of a bug inspect this part. (Event.getclickedblock could cause bugs to has stepped on)
+                    if (!party.hasSteppedOn(block)) {
+                        party.setCheckPoint(party.getCurrentCheckPointLevel() + 1, checkPoint.getLocationByStage(party.getCurrentCheckPointLevel() + 1), block);
+                        party.getLeader().sendMessage(Utils.getFormattedText("&eYou can now use /parkour checkpoint to teleport to the next checkpoint!"));
+                        if (party.getMember() != null)
+                            party.getLeader().sendMessage(Utils.getFormattedText("&eYou can now use /parkour checkpoint to teleport to the next checkpoint!"));
+                        return;
+                    }//check if block
+                    //handle command event while in parkour && fix quit listener tp
+                    if (block.getType().equals(Material.GOLD_PLATE)) {
+                        Block block1 = parkourStage.getEndPoint(p.getWorld()).subtract(0,1,0).getBlock();
+                        if (block1 != null && block1.equals(block)){
+
                         }
-                    }, 40L);
-                    if (pl.parkourManager.getCheckPoint(e.getPlayer()) + 1 > checkpoint) {
-                        if (shouldSay == true) {
-                            p.sendMessage(Utils.getFormattedText("&eYou have already passed that checkpoint"));
-                            shouldSay = false;
-                        }
-                    } else {
-                        party.setCurrentCheckpoint(checkpoint);
-                        if (shouldSay == true) {
-                            p.sendMessage(Utils.getFormattedText("&eYou are now standing on the " + (pl.parkourManager.getCheckPoint(p) + 1) + "/" + (pl.getConfig().getList("Parkour.Levels." + party.getCurrentPlayedMode() + "." + party.getCurrentPlayedLevel() + ".CheckPoints").size()) + " checkpoint" +
-                                    "for this parkour map. Use /parkour checkpoint to teleport to here"));
-                            shouldSay = false;
-                        }
-                    }
-                    if (party.getCurrentPlayedMode().equalsIgnoreCase("Teams")) {
-                        if (pl.partyManager.isLeader(p)) {
-                            if (shouldSay == true) {
-                                party.getMember().sendMessage("&eYour teammate is now standing on a new checkpoint, /parkour checkpoint to teleport to them!");
-                                shouldSay = false;
-                            }
-                        } else {
-                            if (shouldSay == true) {
-                                party.getLeader().sendMessage("&eYour teammate is now standing on a new checkpoint, /parkour checkpoint to teleport to them!");
-                                shouldSay = false;
-                            }
-                        }
-                    }
-                }
-                if (e.getClickedBlock().getType().equals(Material.GOLD_PLATE)) {
-                    ParkourStage parkourStage = new ParkourStage(party.getCurrentPlayedLevel(), party.getCurrentPlayedMode(), pl);
-                    Location loc = (Location) pl.getConfig().get("Parkour.Levels." + party.getCurrentPlayedMode() + "." + party.getCurrentPlayedLevel() + ".StartPoint");
-                    if (e.getClickedBlock().getLocation().getBlockX() == loc.getBlockX() && e.getClickedBlock().getLocation().getBlockZ() == loc.getBlockZ()) {
-                        if (shouldSay == true) {
-                            p.sendMessage(Utils.getFormattedText("&eYou have started parkour stage number " + parkourStage.getStage() + " &eGood luck!"));
-                            shouldSay = false;
-                        }
-                    }
-                    Location loc1 = (Location) pl.getConfig().get("Parkour.Levels." + party.getCurrentPlayedMode() + "." + party.getCurrentPlayedLevel() + ".EndPoint");
-                    if (e.getClickedBlock().getLocation().getBlockX() == loc1.getBlockX() && e.getClickedBlock().getLocation().getBlockZ() == loc1.getBlockZ()) {
-                        if (shouldSay == true) {
-                            p.sendMessage(Utils.getFormattedText("&eYou have finished parkour stage number " + parkourStage.getStage() + " &eGood job!"));
-                            shouldSay = false;
-                        }
-                        pl.parkourManager.finishLevel(parkourStage, party);
                     }
                 }
             }

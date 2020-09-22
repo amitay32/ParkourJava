@@ -1,46 +1,71 @@
 package me.amitay.Parkour.Utils.party;
 
 import me.amitay.Parkour.Parkour;
+import me.amitay.Parkour.Utils.ParkourPackage.ParkourStage;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class Party {
 
     public Player leader;
     private Player member;
-    public boolean ChatEnabledPlayer = false;
-    public boolean ChatEnabledLeader = false;
+    public boolean chatEnabledPlayer = false;
+    public boolean chatEnabledLeader = false;
     private int leaderTeamLevel;
     private int leaderSoloLevel;
     private int memberTeamLevel;
     private int memberSoloLevel;
-    public int currentPlayedLevel = -1;
-    public String currentPlayedMode = "null";
-
-
-    public int currentCheckpoint = -1;
-
-    public void setCurrentCheckpoint(int currentCheckpoint) {
-        this.currentCheckpoint = currentCheckpoint;
-    }
-
-    public int getCurrentCheckpoint() {
-        return currentCheckpoint;
-    }
-
+    public int currentPlayedLevel;
+    public String currentPlayedMode;
+    public Location currentCheckpoint;
     private Parkour pl;
-
+    private int currentCheckPointLevel;
+    private List<Block> steppedCheckPoints = new ArrayList<>();
 
     public Party(Player leader, Parkour pl) {
         this.pl = pl;
         this.leader = leader;
         loadPlayerStats(leader, 'l');
         memberTeamLevel = -1;
+        currentPlayedLevel = -1;
+    }
+    public void endParkour(ParkourStage stage){
+        leader.sendMessage("&eYou have finished the parkour! Good job!");
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + leader.getName());
+        if (getMember() != null) {
+            member.sendMessage("&eYou have finished the parkour! Good job!");
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + member.getName());
+        }
+
+        //handle reward
+    }
+    public void startParkour(int level, String mode){
+        currentPlayedLevel = level;
+        currentPlayedMode = mode;
+    }
+    public int getCurrentCheckPointLevel(){
+        return currentCheckPointLevel;
+    }
+    public void setCheckPoint(int level, Location loc, Block block){
+        currentCheckPointLevel = level;
+        currentCheckpoint = loc;
+        steppedCheckPoints.add(block);
+    }
+    public Location getCurrentCheckpoint() {
+        return currentCheckpoint;
+    }
+    public boolean hasSteppedOn(Block block){
+        return steppedCheckPoints.contains(block);
     }
 
     public boolean containsPlayer(Player player) {
@@ -83,19 +108,19 @@ public class Party {
     }
 
     public void setPartyChatPlayer() {
-        ChatEnabledPlayer = !ChatEnabledPlayer;
+        chatEnabledPlayer = !chatEnabledPlayer;
     }
 
     public void setPartyChatLeader() {
-        ChatEnabledLeader = !ChatEnabledLeader;
+        chatEnabledLeader = !chatEnabledLeader;
     }
 
     public boolean partyChatEnabledLeader() {
-        return ChatEnabledLeader;
+        return chatEnabledLeader;
     }
 
     public boolean partyChatEnabledMemebr() {
-        return ChatEnabledPlayer;
+        return chatEnabledPlayer;
     }
 
     public int getCurrentPlayedLevel(){

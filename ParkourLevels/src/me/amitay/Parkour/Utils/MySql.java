@@ -29,7 +29,6 @@ public class MySql {
         table = "player_data2";
         try {
 
-            synchronized (this) {
                 if (connection != null && !connection.isClosed()) {
                     return;
                 }
@@ -42,7 +41,6 @@ public class MySql {
                 statement.executeUpdate();
                 statement.close();
                 Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "MySql has been connected");
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {

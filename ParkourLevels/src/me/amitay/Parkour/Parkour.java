@@ -2,17 +2,12 @@ package me.amitay.Parkour;
 
 import me.amitay.Parkour.Commands.ParkourCommand;
 import me.amitay.Parkour.Commands.PartyCommands;
-import me.amitay.Parkour.Listeners.OnJoinListener;
-import me.amitay.Parkour.Listeners.PartyChatListener;
-import me.amitay.Parkour.Listeners.PlayerInteractListener;
-import me.amitay.Parkour.Listeners.QuitListener;
 import me.amitay.Parkour.Utils.LoadItems;
 import me.amitay.Parkour.Utils.MySql;
 import me.amitay.Parkour.Utils.ParkourPackage.ParkourManager;
-import me.amitay.Parkour.Utils.Utils;
 import me.amitay.Parkour.Utils.party.InviteManager;
 import me.amitay.Parkour.Utils.party.PartyManager;
-import org.bukkit.Bukkit;
+import me.amitay.Parkour.Listeners.*;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,11 +18,11 @@ public class Parkour extends JavaPlugin {
     public InviteManager inviteManager = new InviteManager(this);
     public LoadItems loadItemsClass = new LoadItems(this);
     public ParkourManager parkourManager = new ParkourManager(this);
-    private final ParkourCommand parkourCommand = new ParkourCommand(this);
     public String ParkourPrefix = "&ePARKOUR >>";
 
 
     private MySql mysql;
+
 
     public void onEnable() {
         loadConfigData();
@@ -45,6 +40,7 @@ public class Parkour extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new OnJoinListener(this), this);
         getServer().getPluginManager().registerEvents(new ParkourCommand(this), this);
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
+        getServer().getPluginManager().registerEvents(new CommandListener(this), this);
     }
 
     public void loadUtils() {
@@ -52,8 +48,6 @@ public class Parkour extends JavaPlugin {
         loadCommands();
         loadEvents();
         saveDefaultConfig();
-        parkourManager.loadLocationsSolo();
-        parkourManager.loadLocationsTeams();
         loadItemsClass.loadItems();
         mysql = new MySql(this);
     }
