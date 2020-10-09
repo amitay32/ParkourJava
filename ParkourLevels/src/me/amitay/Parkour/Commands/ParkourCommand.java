@@ -1,11 +1,14 @@
 package me.amitay.Parkour.Commands;
 
 import me.amitay.Parkour.Parkour;
-import me.amitay.Parkour.Utils.ItemBuilder;
+import me.amitay.Parkour.Utils.ParkourPackage.CheckPoint;
 import me.amitay.Parkour.Utils.ParkourPackage.ParkourStage;
 import me.amitay.Parkour.Utils.Utils;
 import me.amitay.Parkour.Utils.party.Party;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,7 +17,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+
 import java.util.ArrayList;
+import java.util.Map;
 
 public class ParkourCommand implements CommandExecutor, Listener {
 
@@ -34,19 +39,36 @@ public class ParkourCommand implements CommandExecutor, Listener {
         }
         Player p = (Player) sender;
         if (args.length != 0) {
-            if (args.length == 1){
+            if (args.length == 1) {
                 if (args[0].equalsIgnoreCase("checkpoint")) {
                     Party party = pl.partyManager.getPlayerParty(p);
-                    if (pl.parkourManager.isInParkour(p)){
-                        if (party.getCurrentCheckpoint() != null){
+                    if (pl.parkourManager.isInParkour(p)) {
+                        if (party.getCurrentCheckpoint() != null) {
                             p.teleport(party.getCurrentCheckpoint());
                             p.sendMessage(Utils.getFormattedText("&eSuccessfully teleported to last checkpoint"));
                             return true;
-                        } else {
-                            p.sendMessage(Utils.getFormattedText("&cYou did not step on any checkpoints yet"));
-                            return true;
                         }
+                        p.sendMessage(Utils.getFormattedText("&cYou did not step on any checkpoints yet"));
+                        return true;
+
                     }
+                }
+                if (args[0].equalsIgnoreCase("debug")) {
+                    System.out.println("debug command");
+                    Party party = pl.partyManager.getPlayerParty(p);
+                    ParkourStage stage = pl.parkourManager.getParkourStage(party.getCurrentPlayedLevel(), party.getCurrentPlayedMode());
+                    if (stage.getCheckPointMap().get(p.getWorld()) == null) {
+                        System.out.println("Black boolbool");
+                        return true;
+                    }
+                    for (Map.Entry<World, CheckPoint> entry : stage.getCheckPointMap().entrySet()) {
+                        System.out.println(entry.getKey().getName());
+                        System.out.println("ParkourCommand.onCommand " + entry.getValue() == null);
+                    }
+                    for (Map.Entry<Integer, Location> entry : stage.getCheckPointMap().get(p.getWorld()).getCheckPoints().entrySet()) {
+                        System.out.println("CommandListener.onCommandsListener " + entry.getKey() + " at " + entry.getValue().toString());
+                    }
+                    return true;
                 }
             }
             if (args.length == 4) {
@@ -67,9 +89,10 @@ public class ParkourCommand implements CommandExecutor, Listener {
                                     return true;
                                 }
                             }
-                        } if (args[1].equalsIgnoreCase("checkpoint")) {
+                        }
+                        if (args[1].equalsIgnoreCase("checkpoint")) {
                             if (args[3].equalsIgnoreCase("Teams")) {
-                                if (pl.getConfig().getList("Parkour.Levels.Teams." + args[2] + ".CheckPoints") == null){
+                                if (pl.getConfig().getList("Parkour.Levels.Teams." + args[2] + ".CheckPoints") == null) {
                                     ArrayList<Location> list = new ArrayList<>();
                                     list.add(p.getLocation());
                                     pl.getConfig().set("Parkour.Levels.Teams." + args[2] + ".CheckPoints", list);
@@ -78,7 +101,7 @@ public class ParkourCommand implements CommandExecutor, Listener {
                                     return true;
                                 }
                                 ArrayList<Location> list = new ArrayList<>();
-                                for (int i = 0; i< pl.getConfig().getList("Parkour.Levels.Teams." + args[2] + ".CheckPoints").size();  i++){
+                                for (int i = 0; i < pl.getConfig().getList("Parkour.Levels.Teams." + args[2] + ".CheckPoints").size(); i++) {
                                     list.add((Location) pl.getConfig().getList("Parkour.Levels.Teams." + args[2] + ".CheckPoints").get(i));
                                 }
                                 list.add(p.getLocation());
@@ -88,7 +111,7 @@ public class ParkourCommand implements CommandExecutor, Listener {
                                 return true;
                             }
                             if (args[3].equalsIgnoreCase("Solo")) {
-                                if (pl.getConfig().getList("Parkour.Levels.Solo." + args[2] + ".CheckPoints") == null){
+                                if (pl.getConfig().getList("Parkour.Levels.Solo." + args[2] + ".CheckPoints") == null) {
                                     ArrayList<Location> list = new ArrayList<>();
                                     list.add(p.getLocation());
                                     pl.getConfig().set("Parkour.Levels.Solo." + args[2] + ".CheckPoints", list);
@@ -97,7 +120,7 @@ public class ParkourCommand implements CommandExecutor, Listener {
                                     return true;
                                 }
                                 ArrayList<Location> list = new ArrayList<>();
-                                for (int i = 0; i< pl.getConfig().getList("Parkour.Levels.Solo." + args[2] + ".CheckPoints").size();  i++){
+                                for (int i = 0; i < pl.getConfig().getList("Parkour.Levels.Solo." + args[2] + ".CheckPoints").size(); i++) {
                                     list.add((Location) pl.getConfig().getList("Parkour.Levels.Solo." + args[2] + ".CheckPoints").get(i));
                                 }
                                 list.add(p.getLocation());
@@ -106,7 +129,8 @@ public class ParkourCommand implements CommandExecutor, Listener {
                                 p.sendMessage(Utils.getFormattedText("&eSuccessfully set checkpoint for soloq level " + args[2]));
                                 return true;
                             }
-                        } if (args[1].equalsIgnoreCase("endpoint")) {
+                        }
+                        if (args[1].equalsIgnoreCase("endpoint")) {
                             if (args[3].equalsIgnoreCase("Teams")) {
                                 pl.getConfig().set("Parkour.Levels.Teams." + args[2] + ".EndPoint", p.getLocation());
                                 pl.saveConfig();
@@ -122,7 +146,6 @@ public class ParkourCommand implements CommandExecutor, Listener {
                     }
                 }
             }
-            p.sendMessage(Utils.getFormattedText(pl.ParkourPrefix + "&7Correct usage: /parkour"));
             return true;
         }
         if (!pl.partyManager.isInParty(p)) {
@@ -313,7 +336,8 @@ public class ParkourCommand implements CommandExecutor, Listener {
             e.getWhoClicked().closeInventory();
             return;
         }
-        if (party.getLeaderTeamLevel() >= lvl && party.getMemberTeamLevel() >= lvl) {
+        //4 >= 5
+        if (party.getLeaderTeamLevel() >= lvl - 1 && party.getMemberTeamLevel() >= lvl - 1) {
             ParkourStage parkourStage = pl.parkourManager.getParkourStage(lvl, "Teams");
             party.setCurrentPlayedLevel(lvl);
             party.setCurrentPlayedMode("Teams");
@@ -340,7 +364,7 @@ public class ParkourCommand implements CommandExecutor, Listener {
             e.getWhoClicked().closeInventory();
             return;
         }
-        if (party.getLeaderSoloLevel() >= lvl) {
+        if (party.getLeaderSoloLevel() >= lvl - 1) {
             ParkourStage parkourStage = pl.parkourManager.getParkourStage(lvl, "Solo");
             party.setCurrentPlayedLevel(lvl);
             party.setCurrentPlayedMode("Solo");
@@ -355,9 +379,9 @@ public class ParkourCommand implements CommandExecutor, Listener {
     public boolean isInteger(String s) {
         try {
             Integer.parseInt(s);
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return false;
-        } catch(NullPointerException e) {
+        } catch (NullPointerException e) {
             return false;
         }
         return true;

@@ -24,7 +24,6 @@ public class Party {
     private int leaderTeamLevel;
     private int leaderSoloLevel;
     private int memberTeamLevel;
-    private int memberSoloLevel;
     public int currentPlayedLevel;
     public String currentPlayedMode;
     public Location currentCheckpoint;
@@ -39,32 +38,89 @@ public class Party {
         memberTeamLevel = -1;
         currentPlayedLevel = -1;
     }
-    public void endParkour(ParkourStage stage){
-        leader.sendMessage("&eYou have finished the parkour! Good job!");
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + leader.getName());
-        if (getMember() != null) {
-            member.sendMessage("&eYou have finished the parkour! Good job!");
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + member.getName());
-        }
 
-        //handle reward
+    public void endParkour(ParkourStage stage) {
+        stage.freeWorld(leader.getLocation().getWorld());
+        leader.sendMessage("&eYou have finished the parkour!");
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + leader.getName());
+        stage.executeCommands(leader.getName());
+        if (member != null) {
+            member.sendMessage("&eYou have finished the parkour!");
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + member.getName());
+            stage.executeCommands(member.getName());
+            handlePlayerWin(member);
+        }
+        handlePlayerWin(leader);
+        clear();
     }
-    public void startParkour(int level, String mode){
+
+    private void handlePlayerWin(Player player){
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    PreparedStatement statement = pl.getMySql().getConnection()
+                            .prepareStatement("SELECT * FROM " + pl.getMySql().getTable() + " WHERE UUID=?");
+                    statement.setString(1, player.getUniqueId().toString());
+                    ResultSet results = statement.executeQuery();
+                    results.next();
+                    int level = results.getInt(currentPlayedMode.toUpperCase() + "_LEVEL");
+                    statement.close();
+                    results.close();
+                    updatePlayerStats(player, level);
+                } catch (SQLException e) {
+                    leaderTeamLevel = 1;
+                    memberTeamLevel = 1;
+                    e.printStackTrace();
+                }
+            }
+
+        }.runTaskAsynchronously(pl);
+    }
+    public void updatePlayerStats(Player player, int level){
+        if (level == currentPlayedLevel - 1){
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    try {
+                        PreparedStatement statement = pl.getMySql().getConnection()
+                                .prepareStatement("UPDATE " + pl.getMySql().getTable() + " SET " + currentPlayedMode.toUpperCase() + "_LEVEL=? WHERE UUID=?");
+                        statement.setInt(1, currentPlayedLevel);
+                        statement.setString(2, player.getUniqueId().toString());
+                        statement.executeUpdate();
+                        statement.close();
+                        if (leader.equals(player))
+                            loadPlayerStats(player, 'l');
+                        else if (member != null && member.equals(player))
+                            loadPlayerStats(member, 'm');
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }.runTaskAsynchronously(pl);
+        }
+    }
+    public void startParkour(int level, String mode) {
         currentPlayedLevel = level;
         currentPlayedMode = mode;
     }
-    public int getCurrentCheckPointLevel(){
+
+    public int getCurrentCheckPointLevel() {
         return currentCheckPointLevel;
     }
-    public void setCheckPoint(int level, Location loc, Block block){
+
+    public void setCheckPoint(int level, Location loc, Block block) {
         currentCheckPointLevel = level;
         currentCheckpoint = loc;
         steppedCheckPoints.add(block);
     }
+
     public Location getCurrentCheckpoint() {
         return currentCheckpoint;
     }
-    public boolean hasSteppedOn(Block block){
+
+    public boolean hasSteppedOn(Block block) {
         return steppedCheckPoints.contains(block);
     }
 
@@ -87,6 +143,7 @@ public class Party {
     public void deleteParty() {
         leader = null;
         member = null;
+        clear();
     }
 
     public void addmember(Player player) {
@@ -123,19 +180,38 @@ public class Party {
         return chatEnabledPlayer;
     }
 
-    public int getCurrentPlayedLevel(){
+    public int getCurrentPlayedLevel() {
         return currentPlayedLevel;
     }
-    public void setCurrentPlayedLevel(int level){
+
+    public void setCurrentPlayedLevel(int level) {
         currentPlayedLevel = level;
     }
-    public String getCurrentPlayedMode(){
+
+    public String getCurrentPlayedMode() {
         return currentPlayedMode;
     }
-    public void setCurrentPlayedMode(String mode){
+
+    public void setCurrentPlayedMode(String mode) {
         currentPlayedMode = mode;
     }
 
+    public int getLeaderTeamLevel() {
+        return leaderTeamLevel;
+    }
+    public int getMemberTeamLevel() {
+        return memberTeamLevel;
+    }
+    public int getLeaderSoloLevel() {
+        return leaderSoloLevel;
+    }
+    private void clear(){
+        steppedCheckPoints.clear();
+        currentCheckPointLevel = 0;
+        currentCheckpoint = null;
+        currentPlayedLevel = -1;
+        currentPlayedMode = null;
+    }
     public void loadPlayerStats(Player player, char c) {
         new BukkitRunnable() {
             @Override
@@ -151,10 +227,8 @@ public class Party {
                     if (c == 'l') {
                         leaderTeamLevel = teamlevel;
                         leaderSoloLevel = sololevel;
-                    }
-                    else if (c == 'm') {
+                    } else if (c == 'm') {
                         memberTeamLevel = teamlevel;
-                        memberSoloLevel = sololevel;
                     }
                     statement.close();
                     results.close();
@@ -167,103 +241,6 @@ public class Party {
             }
 
         }.runTaskAsynchronously(pl);
-    }
-    public int getLeaderTeamLevel() {
-        return leaderTeamLevel;
-    }
-    public int getMemberTeamLevel() {
-        return memberTeamLevel;
-    }
-    public int getLeaderSoloLevel() {
-        return leaderSoloLevel;
-    }
-    public int getMemberSoloLevel() {
-        return memberSoloLevel;
-    }
-
-    public void updateLeaderSoloLevel(UUID uuid) {
-        new BukkitRunnable() {
-
-            @Override
-            public void run() {
-                try {
-                    PreparedStatement statement = pl.getMySql().getConnection()
-                            .prepareStatement("UPDATE " + pl.getMySql().getTable() + " SET SOLO_LEVEL=? WHERE UUID=?");
-                    statement.setInt(1, leaderSoloLevel + 1);
-                    statement.setString(2, uuid.toString());
-                    statement.executeUpdate();
-                    statement.close();
-                    leaderSoloLevel++;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }.runTaskAsynchronously(pl);
-
-    }
-    public void updateLeaderTeamsLevel(UUID uuid) {
-        new BukkitRunnable() {
-
-            @Override
-            public void run() {
-                try {
-                    PreparedStatement statement = pl.getMySql().getConnection()
-                            .prepareStatement("UPDATE " + pl.getMySql().getTable() + " SET TEAMS_LEVEL=? WHERE UUID=?");
-                    statement.setInt(1, leaderTeamLevel + 1);
-                    statement.setString(2, uuid.toString());
-                    statement.executeUpdate();
-                    statement.close();
-                    leaderTeamLevel++;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }.runTaskAsynchronously(pl);
-
-    }
-    public void updateMemberSoloLevel(UUID uuid) {
-        new BukkitRunnable() {
-
-            @Override
-            public void run() {
-                try {
-                    PreparedStatement statement = pl.getMySql().getConnection()
-                            .prepareStatement("UPDATE " + pl.getMySql().getTable() + " SET SOLO_LEVEL=? WHERE UUID=?");
-                    statement.setInt(1, memberSoloLevel + 1);
-                    statement.setString(2, uuid.toString());
-                    statement.executeUpdate();
-                    statement.close();
-                    memberSoloLevel++;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }.runTaskAsynchronously(pl);
-
-    }
-    public void updateMemberTeamLevel(UUID uuid) {
-        new BukkitRunnable() {
-
-            @Override
-            public void run() {
-                try {
-                    PreparedStatement statement = pl.getMySql().getConnection()
-                            .prepareStatement("UPDATE " + pl.getMySql().getTable() + " SET TEAMS_LEVEL=? WHERE UUID=?");
-                    statement.setInt(1, memberTeamLevel + 1);
-                    statement.setString(2, uuid.toString());
-                    statement.executeUpdate();
-                    statement.close();
-                    memberTeamLevel++;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }.runTaskAsynchronously(pl);
-
     }
 
 }

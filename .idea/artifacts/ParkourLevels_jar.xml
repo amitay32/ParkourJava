@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ParkourLevels:jar">
+    <output-path>$USER_HOME$/Desktop/server1.8.8/plugins</output-path>
+    <root id="archive" name="ParkourLevels.jar">
+      <element id="module-output" name="ParkourLevels" />
+    </root>
+  </artifact>
+</component>

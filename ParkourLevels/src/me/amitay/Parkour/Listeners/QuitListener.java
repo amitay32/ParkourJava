@@ -3,6 +3,7 @@ package me.amitay.Parkour.Listeners;
 import me.amitay.Parkour.Parkour;
 import me.amitay.Parkour.Utils.Utils;
 import me.amitay.Parkour.Utils.party.Party;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,20 +21,24 @@ public class QuitListener implements Listener {
         Player p = e.getPlayer();
         if (pl.partyManager.isInParty(p)) {
             Party party = pl.partyManager.getPlayerParty(p);
-            if (party == null) {
-                return;
+            if (party.getLeader() != null && party.getLeader().equals(p)) {// handle if leader quits
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + party.getLeader().getName());
+                if (party.getMember() != null) {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + party.getMember().getName());
+                    party.getMember().sendMessage(Utils.getFormattedText("&eOne of the party members has left the game, therefor the party was concluded"));
+                }
             }
-            if (party.getLeader() != null) {
-                party.getLeader().sendMessage(Utils.getFormattedText("&c" + p.getName() + " Has left the server, therefore the party was disbanded"));
-            }
-            else if (party.getMember() != null) {
-                party.getLeader().sendMessage(Utils.getFormattedText("&c" + party.getLeaderName() + " Has left the server, therefore the party was disbanded"));
+            if (party.getMember() != null) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + party.getMember().getName());
+                if (party.getLeader() != null) {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + party.getLeader().getName());
+                    party.getMember().sendMessage("&eOne of the party members has left the game, therefor the party was concluded");
+                }
             }
             party.deleteParty();
             pl.partyManager.getParties().remove(party);
-            pl.inviteManager.invites.remove(p);
-            return;
         }
     }
 }
+
 

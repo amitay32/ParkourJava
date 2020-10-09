@@ -1,8 +1,6 @@
 main: me.amitay.Parkour.Parkour
-name: ParkourLevels
+name: CustomParkour
 version: 1.0.0
-
-depend: [Multiverse-Core, WorldGuard]
 
 commands:
   party:

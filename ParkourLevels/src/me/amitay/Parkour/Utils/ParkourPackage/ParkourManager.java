@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ParkourManager {
     private Parkour pl;
@@ -21,11 +22,14 @@ public class ParkourManager {
 
     public ParkourManager(Parkour pl) {
         this.pl = pl;
-        List<World> worldList = new ArrayList<>();
-        pl.getConfig().getStringList("worlds").forEach((key) ->
-                worldList.add(Bukkit.getWorld(key))
-        );
+        List<World> worldList = pl.getConfig().getStringList("worlds").stream()
+                .map(Bukkit::getWorld)
+                .collect(Collectors.toList());
         Map<Integer, Location> checkPoints;
+        if (pl.getConfig().get("Parkour.Levels.Solo") == null)
+            return;
+        if (pl.getConfig().get("Parkour.Levels.Teams") == null)
+            return;
         if (pl.getConfig().getConfigurationSection("Parkour.Levels.Solo").getKeys(false) != null)
             for (String key : pl.getConfig().getConfigurationSection("Parkour.Levels.Solo").getKeys(false)) {
                 try {
@@ -72,27 +76,30 @@ public class ParkourManager {
             p.sendMessage(Utils.getFormattedText("&cYou need to create a party to play parkour, /party help for more information"));
             return;
         }
-        if (!parkour.playable()) {
+        if (!parkour.
+                playable()) {
             p.sendMessage(Utils.getFormattedText("&cAn error has occurred, please contact a staff member if that keeps on happening"));
             return;
         }
-        if (parkour.getEmptyWorld() == null) {
+        World world = parkour.getEmptyWorld();
+        if (world == null) {
             p.sendMessage(Utils.getFormattedText("&cThere are currently no empty worlds to play at, please wait a few minutes and try again."));
             return;
         }
+        parkour.makeWorldOccupied(world);
         if (parkour.getMode().equalsIgnoreCase("Teams")) {
             if (party.hasMember()) {
                 Player member = party.getMember();
                 Player leader = party.getLeader();
-                member.teleport(parkour.getStartPoint(parkour.getEmptyWorld()));
-                leader.teleport(parkour.getStartPoint(parkour.getEmptyWorld()));
+                member.teleport(parkour.getStartPoint(world));
+                leader.teleport(parkour.getStartPoint(world));
                 party.startParkour(parkour.getStage(), parkour.getMode());
             }
             return;
         }
         if (parkour.getMode().equalsIgnoreCase("Solo")) {
             Player leader = party.getLeader();
-            leader.teleport(parkour.getStartPoint(parkour.getEmptyWorld()));
+            leader.teleport(parkour.getStartPoint(world));
             party.startParkour(parkour.getStage(), parkour.getMode());
             return;
         }
@@ -106,39 +113,5 @@ public class ParkourManager {
         return party.getCurrentPlayedLevel() != -1;
     }
 
-
-    public void finishLevel(ParkourStage stage, Party party) { //teleport them to spawn
-        if (stage.getMode().equalsIgnoreCase("Solo")) {
-            if (party.getLeaderSoloLevel() == stage.getStage()) {
-                System.out.println("Completed level " + stage.getStage() + " for first time"); //go over it
-                party.updateLeaderSoloLevel(party.getLeader().getUniqueId());
-            } else {
-                System.out.println("That's not the first time (level " + stage.getStage());
-            }
-            party.setCurrentPlayedMode(null);
-            party.setCurrentPlayedLevel(-1);
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + party.getLeader().getName());
-        }
-        if (stage.getMode().equalsIgnoreCase("Teams")) {
-            if (party.getLeaderTeamLevel() >= stage.getStage() && party.getMemberTeamLevel() >= stage.getStage()) {
-                if (party.getLeaderTeamLevel() == stage.getStage()) {
-                    System.out.println("Completed level " + stage.getStage() + " for first time");
-                    party.updateLeaderTeamsLevel(party.getLeader().getUniqueId());
-                } else {
-                    System.out.println("That's not the first time (level " + stage.getStage());
-                }
-                if (party.getMemberTeamLevel() == stage.getStage()) {
-                    System.out.println("Completed level " + stage.getStage() + " for first time");
-                    party.updateMemberTeamLevel(party.getMember().getUniqueId());
-                } else {
-                    System.out.println("That's not the first time (level " + stage.getStage());
-                }
-                party.setCurrentPlayedMode(null);
-                party.setCurrentPlayedLevel(-1);
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + party.getLeader().getName());
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "spawn " + party.getMember().getName());
-            }
-        }
-    }
 }
 
