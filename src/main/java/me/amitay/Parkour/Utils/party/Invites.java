@@ -6,7 +6,6 @@ import java.util.UUID;
 
 public class Invites {
     public Map<UUID, Long> timer = new HashMap<>(); //invitor
-
     public Invites (UUID uuid){
         timer.put(uuid, System.currentTimeMillis());
     }
