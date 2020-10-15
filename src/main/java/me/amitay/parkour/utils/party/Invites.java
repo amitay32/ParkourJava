@@ -1,4 +1,4 @@
-package me.amitay.Parkour.Utils.party;
+package me.amitay.parkour.utils.party;
 
 import java.util.HashMap;
 import java.util.Map;

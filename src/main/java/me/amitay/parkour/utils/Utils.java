@@ -1,4 +1,4 @@
-package me.amitay.Parkour.Utils;
+package me.amitay.parkour.utils;
 
 import org.bukkit.ChatColor;
 

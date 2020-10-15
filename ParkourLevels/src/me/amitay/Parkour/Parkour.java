@@ -1,13 +1,13 @@
-package me.amitay.Parkour;
+package me.amitay.parkour;
 
-import me.amitay.Parkour.Commands.ParkourCommand;
-import me.amitay.Parkour.Commands.PartyCommands;
-import me.amitay.Parkour.Utils.LoadItems;
-import me.amitay.Parkour.Utils.MySql;
-import me.amitay.Parkour.Utils.ParkourPackage.ParkourManager;
-import me.amitay.Parkour.Utils.party.InviteManager;
-import me.amitay.Parkour.Utils.party.PartyManager;
-import me.amitay.Parkour.Listeners.*;
+import me.amitay.parkour.commands.ParkourCommand;
+import me.amitay.parkour.commands.PartyCommands;
+import me.amitay.parkour.utils.LoadItems;
+import me.amitay.parkour.utils.MySql;
+import me.amitay.parkour.utils.ParkourPackage.ParkourManager;
+import me.amitay.parkour.utils.party.InviteManager;
+import me.amitay.parkour.utils.party.PartyManager;
+import me.amitay.parkour.listeners.*;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 

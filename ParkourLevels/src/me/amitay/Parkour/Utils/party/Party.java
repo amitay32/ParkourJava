@@ -1,7 +1,7 @@
-package me.amitay.Parkour.Utils.party;
+package me.amitay.parkour.utils.party;
 
-import me.amitay.Parkour.Parkour;
-import me.amitay.Parkour.Utils.ParkourPackage.ParkourStage;
+import me.amitay.parkour.Parkour;
+import me.amitay.parkour.utils.ParkourPackage.ParkourStage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;

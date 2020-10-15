@@ -1,10 +1,10 @@
-package me.amitay.Parkour.Commands;
+package me.amitay.parkour.commands;
 
-import me.amitay.Parkour.Parkour;
-import me.amitay.Parkour.Utils.ParkourPackage.CheckPoint;
-import me.amitay.Parkour.Utils.ParkourPackage.ParkourStage;
-import me.amitay.Parkour.Utils.Utils;
-import me.amitay.Parkour.Utils.party.Party;
+import me.amitay.parkour.Parkour;
+import me.amitay.parkour.utils.ParkourPackage.CheckPoint;
+import me.amitay.parkour.utils.ParkourPackage.ParkourStage;
+import me.amitay.parkour.utils.Utils;
+import me.amitay.parkour.utils.party.Party;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

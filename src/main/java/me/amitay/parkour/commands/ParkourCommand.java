@@ -1,11 +1,11 @@
-package me.amitay.Parkour.Commands;
+package me.amitay.parkour.commands;
 
 import com.github.stefvanschie.inventoryframework.Gui;
 import com.github.stefvanschie.inventoryframework.GuiItem;
-import me.amitay.Parkour.Parkour;
-import me.amitay.Parkour.Utils.ItemBuilder;
-import me.amitay.Parkour.Utils.Utils;
-import me.amitay.Parkour.Utils.party.Party;
+import me.amitay.parkour.Parkour;
+import me.amitay.parkour.utils.ItemBuilder;
+import me.amitay.parkour.utils.Utils;
+import me.amitay.parkour.utils.party.Party;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;

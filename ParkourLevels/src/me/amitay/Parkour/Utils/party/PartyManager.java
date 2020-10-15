@@ -1,7 +1,7 @@
-package me.amitay.Parkour.Utils.party;
+package me.amitay.parkour.utils.party;
 
-import me.amitay.Parkour.Parkour;
-import me.amitay.Parkour.Utils.Utils;
+import me.amitay.parkour.Parkour;
+import me.amitay.parkour.utils.Utils;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;

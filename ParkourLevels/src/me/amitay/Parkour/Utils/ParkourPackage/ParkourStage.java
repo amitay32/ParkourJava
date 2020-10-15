@@ -1,6 +1,6 @@
-package me.amitay.Parkour.Utils.ParkourPackage;
+package me.amitay.parkour.utils.ParkourPackage;
 
-import me.amitay.Parkour.Parkour;
+import me.amitay.parkour.Parkour;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

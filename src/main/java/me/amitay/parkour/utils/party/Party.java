@@ -1,6 +1,6 @@
-package me.amitay.Parkour.Utils.party;
+package me.amitay.parkour.utils.party;
 
-import me.amitay.Parkour.Parkour;
+import me.amitay.parkour.Parkour;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 

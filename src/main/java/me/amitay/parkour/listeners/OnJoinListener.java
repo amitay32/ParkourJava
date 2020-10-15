@@ -1,6 +1,6 @@
-package me.amitay.Parkour.Listeners;
+package me.amitay.parkour.listeners;
 
-import me.amitay.Parkour.Parkour;
+import me.amitay.parkour.Parkour;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;

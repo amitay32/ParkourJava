@@ -1,4 +1,4 @@
-package me.amitay.Parkour.Utils.ParkourPackage;
+package me.amitay.parkour.utils.ParkourPackage;
 
 import org.bukkit.Location;
 
